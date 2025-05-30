@@ -1,0 +1,17 @@
+{
+	"id": "polarized_erratic",
+	"name": "Polarized Erratic Deck Mod",
+	"display_name": "Polarized Erratic",
+	"author": ["Sean Lord"],
+	"description": "Modifies Erratic card back to generate new decks until polarization is sufficient",
+	"prefix": "polarized_erratic",
+	"main_file": "polarized_erratic.lua",
+	"priority": 0,
+	"badge_colour": "00B4E6",
+	"badge_text_colour": "000000",
+	"version": "0.1",
+	"dependencies": [
+		"Steamodded (>=1.*)",
+		"Lovely (>=0.6)"
+	]
+}
