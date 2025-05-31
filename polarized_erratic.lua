@@ -1,4 +1,4 @@
-local function checkPolarization(cards)
+local function checkPolarization(deck)
 	suit_counts = {
 		['Clubs'] = 0,
 		['Diamonds'] = 0,
@@ -22,12 +22,12 @@ local function checkPolarization(cards)
 	}
 	score_total = 0
 
-	for i = #cards, 1, -1 do
-		_suit = cards[i].base.suit
+	for _, _card in ipairs(deck) do
+		_suit = _card.suit
 		suit_counts[_suit] = suit_counts[_suit] + 1
-		_rank = cards[i].base.value
+		_rank = _card.rank
 		rank_counts[_rank] = rank_counts[_rank] + 1
-		_score = cards[i].base.nominal
+		_score = _card.score
 		score_total = score_total + _score
 	end
 
@@ -41,36 +41,82 @@ local function checkPolarization(cards)
 		rank_imbalance = rank_imbalance + math.abs(13 - v)
 	end
 
-	if score_total >= 415 and suit_imbalance >= 12 then
+	if score_total >= 450 and suit_imbalance >= 20 then
 		return true
 	end
 	return false
 end
 
+-- Could just write these out but should be neglibible compared to RNG elements
+local function getCards()
+	local suits = { 'Clubs', 'Diamonds', 'Hearts', 'Spades' }
+	local ranks = {
+		['2'] = 2,
+		['3'] = 3,
+		['4'] = 4,
+		['5'] = 5,
+		['6'] = 6,
+		['7'] = 7,
+		['8'] = 8,
+		['9'] = 9,
+		['10'] = 10,
+		['Jack'] = 10,
+		['Queen'] = 10,
+		['King'] = 10,
+		['Ace'] = 11
+	}
+	
+	cards = {}
+	for _, _suit in ipairs(suits) do
+		for _rank, _score in pairs(ranks) do
+			_suit_abbr = string.sub(_suit, 1, 1)
+			_rank_abbr = string.sub(_rank, 1, 1)
+			if _rank_abbr == '1' then _rank_abbr = 'T' end
+			_key = _suit_abbr..'_'.._rank_abbr
+			cards[ #cards + 1 ] = { key = _key, suit = _suit, rank = _rank, score = _score }
+		end
+	end
+	return cards
+end
+
+-- Balatro starts by generating its own random deck so this function helps me check if that deck is adequate
+local function convertDeck(game_deck)
+	deck = {}
+	for _, v in ipairs(game_deck) do
+		deck[ #deck + 1 ] = {
+			-- Don't need key because I only use it to modify the game deck
+			suit = v.base.suit,
+			rank = v.base.value,
+			score = v.base.nominal
+		}
+	end
+	return deck
+end
+
 SMODS.Back:take_ownership(
-	'erratic', -- Erratic Back
+	'erratic',
 	{
 		apply = function()
 			G.E_MANAGER:add_event(Event({
 				func = function()
-					decks = 1
-					while (not checkPolarization(G.playing_cards)) do
+					deck_count = 0
+					deck = convertDeck(G.playing_cards)
+					if not checkPolarization(deck) then
+						cards = getCards()
+						repeat
+							-- Create a random deck
+							deck = {}
+							for i = 52, 1, -1 do
+								deck[i] = cards[math.random( #cards )]
+							end
+							deck_count = deck_count + 1
+						until checkPolarization(deck)
 						for i = #G.playing_cards, 1, -1 do
-							local suits = {
-								'C', 'D', 'H', 'S'
-							}
-							local ranks = {
-								'A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'
-							}
-
-							local random_suit = suits[math.random( #suits )]
-							local random_rank = ranks[math.random( #ranks )]
-
-							G.playing_cards[i]:set_base(G.P_CARDS[random_suit .. "_" .. random_rank])
+							print(deck[i].key..': '..deck[i].rank..' of '..deck[i].suit)
+							G.playing_cards[i]:set_base(G.P_CARDS[deck[i].key])
 						end
-						decks = decks + 1
 					end
-					print("Tried "..decks.." decks")
+					print("Tried "..deck_count.." addtional decks")
 					return true
 				end
 			}))
