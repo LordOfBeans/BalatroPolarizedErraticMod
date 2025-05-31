@@ -2,7 +2,7 @@ import java.util.Random;
 
 class Main {
 
-	private static int GENERATE_COUNT = 100;
+	private static int GENERATE_COUNT = 1000000;
 
 	public static Deck[] generateDecks(int deckCount) {
 		// Generate array of all cards
@@ -31,11 +31,13 @@ class Main {
 	}
 
 	public static void main(String[] args) {
+		ReportAggregator agg = new ReportAggregator();
 		Deck[] randomDecks = generateDecks(GENERATE_COUNT);
 		for (Deck deck: randomDecks) {
 			DeckAnalyzer analyzer = new DeckAnalyzer(deck);
-			int score = analyzer.getTotalScore();
-			System.out.printf("Got total score of %d\n", score);
+			DeckAnalyzer.DeckReport report = analyzer.getReport();
+			agg.add(report);
 		}
+		agg.printScoreOffsetCumulatives();
 	}
 }
