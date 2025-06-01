@@ -1,3 +1,5 @@
+require "math"
+
 local function checkPolarization(deck)
 	suit_counts = {
 		['Clubs'] = 0,
@@ -41,7 +43,7 @@ local function checkPolarization(deck)
 		rank_imbalance = rank_imbalance + math.abs(13 - v)
 	end
 
-	if score_total >= 450 and suit_imbalance >= 20 then
+	if score_total >= 440 and suit_imbalance >= 18 then
 		return true
 	end
 	return false
@@ -93,6 +95,39 @@ local function convertDeck(game_deck)
 	return deck
 end
 
+-- Used to calculate normal CDF
+-- Credit: John D. Cook & Greg Hewgill
+-- URL: https://hewgill.com/picomath/lua/erf.lua.html
+local function erf(x)
+    -- constants
+    a1 =  0.254829592
+    a2 = -0.284496736
+    a3 =  1.421413741
+    a4 = -1.453152027
+    a5 =  1.061405429
+    p  =  0.3275911
+
+    -- Save the sign of x
+    sign = 1
+    if x < 0 then
+        sign = -1
+    end
+    x = math.abs(x)
+
+    -- A&S formula 7.1.26
+    t = 1.0/(1.0 + p*x)
+    y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*math.exp(-x*x)
+
+    return sign*y
+end
+
+-- Given a point x, a mean, and a standard deviation
+-- Returns the CDF of x on corresponding normal distribution
+function normalCdf(x, mean, sd)
+	z = ( x - mean ) / sd
+	return ( 1 + erf( z / 1.41421356 ) ) / 2
+end
+
 SMODS.Back:take_ownership(
 	'erratic',
 	{
@@ -112,7 +147,6 @@ SMODS.Back:take_ownership(
 							deck_count = deck_count + 1
 						until checkPolarization(deck)
 						for i = #G.playing_cards, 1, -1 do
-							print(deck[i].key..': '..deck[i].rank..' of '..deck[i].suit)
 							G.playing_cards[i]:set_base(G.P_CARDS[deck[i].key])
 						end
 					end
