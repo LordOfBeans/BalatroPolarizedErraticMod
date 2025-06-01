@@ -95,8 +95,8 @@ class DeckAnalyzer {
 		);
 	}
 
-	// I might want to keep some info on each deck but not necessarily the decks themselves
-	// Could be necessary for memory if I test 1M+ decks
+	// I want to keep some info on each deck but not necessarily the decks themselves
+	// Could be necessary for memory if I test 1M+ decks at a time
 	public class DeckReport {
 		// Min = -276, Max = 192, Range = 469
 		public int scoreOffset;

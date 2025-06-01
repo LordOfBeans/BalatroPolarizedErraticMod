@@ -1,11 +1,9 @@
 import java.util.Random;
 
 class Main {
+	private static int GENERATE_COUNT = 5000000;
 
-	private static int GENERATE_COUNT = 1000000;
-
-	public static Deck[] generateDecks(int deckCount) {
-		// Generate array of all cards
+	public static Card[] getCardPool() {
 		Card[] cardPool = new Card[52];
 		int currIndex = 0;
 		for (Card.Suit suit: Card.Suit.values()) {
@@ -15,29 +13,29 @@ class Main {
 				currIndex++;
 			}
 		}
+		return cardPool;
+	}
 
-		// Generate array of randomized decks
-		Deck[] decks = new Deck[deckCount];
-		Random rand = new Random();
-		for (int i = 0; i < deckCount; i++) {
-			Deck currDeck = new Deck();
-			for (int j = 0; j < Deck.MAX_SIZE; j++) {
-				Card currCard = cardPool[rand.nextInt(52)];
-				currDeck.add(currCard);
-			}
-			decks[i] = currDeck;
+	public static Deck generateDeck(Card[] cardPool, Random rand) {
+		Deck deck = new Deck();
+		for (int j = 0; j < Deck.MAX_SIZE; j++) {
+			Card currCard = cardPool[rand.nextInt(52)];
+			deck.add(currCard);
 		}
-		return decks;
+		return deck;
 	}
 
 	public static void main(String[] args) {
+		Card[] cardPool = getCardPool();
+		Random rand = new Random();
 		ReportAggregator agg = new ReportAggregator();
-		Deck[] randomDecks = generateDecks(GENERATE_COUNT);
-		for (Deck deck: randomDecks) {
+		DeckAnalyzer.DeckReport[] reports = new DeckAnalyzer.DeckReport[GENERATE_COUNT];
+		for (int i = 0; i < GENERATE_COUNT; i++) {
+			Deck deck = generateDeck(cardPool, rand);
 			DeckAnalyzer analyzer = new DeckAnalyzer(deck);
-			DeckAnalyzer.DeckReport report = analyzer.getReport();
-			agg.add(report);
+			agg.add(analyzer.getReport());
 		}
-		agg.printScoreOffsetCumulatives();
+		double[] normalStats = agg.getNormalStats();
+		System.out.printf("Mean: %f\nStandard Deviation: %f\n", normalStats[0], normalStats[1]);
 	}
 }
