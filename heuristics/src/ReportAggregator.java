@@ -26,6 +26,7 @@ class ReportAggregator {
 	}
 
 	// Takes a distribution array and returns the cumulatives
+
 	private double[] getCumulatives(int[] dist) {
 		double[] cumulatives = new double[dist.length];
 		int currSeen = 0;
@@ -47,7 +48,23 @@ class ReportAggregator {
 		}
 	}
 
-	public double[] getNormalStats() {
+	public class AggregatorResults {
+		public double[] scoreCumulatives;
+		public double[] suitCumulatives;
+		public double[] rankCumulatives;
+		public double normalMean;
+		public double normalSd;
+
+		private AggregatorResults(double[] scoreC, double[] suitC, double[] rankC, double mean, double sd) {
+			this.scoreCumulatives = scoreC;
+			this.suitCumulatives = suitC;
+			this.rankCumulatives = rankC;
+			this.normalMean = mean;
+			this.normalSd = sd;
+		}
+	}
+
+	public AggregatorResults getNormalStats() {
 		// Get cumulative distributions for deck metrics
 		double[] scoreCumulatives = this.getCumulatives(scoreOffsetDist);
 		double[] suitCumulatives = this.getCumulatives(suitMaxDist);
@@ -62,11 +79,11 @@ class ReportAggregator {
 			double scorePercentile = scoreCumulatives[currReport.scoreOffset + SCORE_INDEX_OFFSET];
 			double suitPercentile = suitCumulatives[currReport.suitMax + SUIT_INDEX_OFFSET];
 			double rankPercentile = rankCumulatives[currReport.rankMovement + RANK_INDEX_OFFSET];
-			double avgPercentile = (scorePercentile + suitPercentile + rankPercentile) / 3; // Division for aesthetics
+			double avgPercentile = (scorePercentile + suitPercentile + rankPercentile) / 3;
 			reportScores[i] = avgPercentile;
 			scoresSum += avgPercentile;
 		}
-		
+
 		// Calculate normal distribution stats
 		double mean = scoresSum / reports.size();
 		double sum_squares = 0;
@@ -74,7 +91,14 @@ class ReportAggregator {
 			double diff = mean - reportScores[i];
 			sum_squares += diff * diff;
 		}
-		double sd = Math.sqrt( sum_squares / (reportScores.length - 1) );
-		return new double[]{ mean, sd };
+		double sd = Math.sqrt(sum_squares / (reportScores.length - 1));
+		AggregatorResults ret = new AggregatorResults(
+			scoreCumulatives,
+			suitCumulatives,
+			rankCumulatives,
+			mean,
+			sd
+		);
+		return ret;
 	}
 }
