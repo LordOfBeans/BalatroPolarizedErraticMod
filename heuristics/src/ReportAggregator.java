@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import java.lang.Math;
 
 class ReportAggregator {
-	private static int SCORE_INDEX_OFFSET = 276;
-	private static int SUIT_INDEX_OFFSET = -13;
-	private static int RANK_INDEX_OFFSET = 0; // For consistency
+	public static int SCORE_INDEX_OFFSET = 276;
+	public static int SUIT_INDEX_OFFSET = -13;
+	public static int RANK_INDEX_OFFSET = 0; // For consistency
 
 	private ArrayList<DeckAnalyzer.DeckReport> reports;
 	private int[] scoreOffsetDist;
@@ -79,7 +79,7 @@ class ReportAggregator {
 			double scorePercentile = scoreCumulatives[currReport.scoreOffset + SCORE_INDEX_OFFSET];
 			double suitPercentile = suitCumulatives[currReport.suitMax + SUIT_INDEX_OFFSET];
 			double rankPercentile = rankCumulatives[currReport.rankMovement + RANK_INDEX_OFFSET];
-			double avgPercentile = (scorePercentile + suitPercentile + rankPercentile) / 3;
+			double avgPercentile = (scorePercentile + suitPercentile + rankPercentile) / 3; // Purely for aesthetics
 			reportScores[i] = avgPercentile;
 			scoresSum += avgPercentile;
 		}
